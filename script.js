@@ -65,7 +65,6 @@ class Particle {
 
 // Professional Tone.js Setup
 let synth = null;
-let drumKit = {};
 let currentMidi = null;
 let isPlaying = false;
 let animationId;
@@ -114,90 +113,6 @@ async function initAudio() {
     synth.connect(limiter);
     synth.volume.value = -4; 
     
-    // Pro Drum Bus with EQ, Saturation, and Compression for a massive studio sound
-    const drumEQ = new Tone.EQ3({
-      low: 6,      // Huge bass boost
-      mid: -3,     // Cut muddy frequencies
-      high: 4,     // Crisp highs
-      lowFrequency: 80,
-      highFrequency: 4000
-    });
-    const drumDistortion = new Tone.Distortion(0.8); // Harmonic warmth
-    const drumCompressor = new Tone.Compressor({
-      threshold: -24,
-      ratio: 8,
-      attack: 0.003,
-      release: 0.1
-    }).toDestination(); // Bypass the huge piano reverb to stay tight
-    
-    drumEQ.connect(drumDistortion);
-    drumDistortion.connect(drumCompressor);
-    
-    // Drum Bus Channel
-    const drumBus = new Tone.Volume(2).connect(drumEQ);
-
-    // KICK: Layered modern punch (sub drop + click)
-    const kickBody = new Tone.MembraneSynth({
-      pitchDecay: 0.02,
-      octaves: 5,
-      oscillator: { type: 'square' }, 
-      envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 0.4 }
-    }).connect(drumBus);
-
-    // SNARE: Layered body (tone) + noise (rattle)
-    const snareBody = new Tone.MembraneSynth({
-      pitchDecay: 0.01,
-      octaves: 2,
-      oscillator: { type: 'triangle' },
-      envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.15 }
-    }).connect(drumBus);
-    
-    const snareNoise = new Tone.NoiseSynth({
-      noise: { type: 'white' },
-      envelope: { attack: 0.001, decay: 0.25, sustain: 0, release: 0.25 }
-    }).connect(drumBus);
-
-    // HI-HAT: Extremely crisp high-passed noise
-    const hihat = new Tone.NoiseSynth({
-      noise: { type: 'white' },
-      envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.05 }
-    });
-    const hihatFilter = new Tone.Filter(8000, "highpass").connect(drumBus);
-    hihat.connect(hihatFilter);
-
-    // TOM: Deep and resonant
-    const tom = new Tone.MembraneSynth({
-      pitchDecay: 0.04,
-      octaves: 3,
-      oscillator: { type: 'sine' },
-      envelope: { attack: 0.001, decay: 0.5, sustain: 0, release: 0.5 }
-    }).connect(drumBus);
-
-    // Virtual Drumkit wrapper routing logic
-    drumKit = {
-      kick: {
-        triggerAttackRelease: (note, dur, time, vel) => {
-          kickBody.triggerAttackRelease("C1", dur, time, vel * 1.5);
-        }
-      },
-      snare: {
-        triggerAttackRelease: (note, dur, time, vel) => {
-          snareBody.triggerAttackRelease("G2", dur, time, vel);
-          snareNoise.triggerAttackRelease(dur, time, vel * 0.8);
-        }
-      },
-      hihat: {
-        triggerAttackRelease: (note, dur, time, vel) => {
-          hihat.triggerAttackRelease(dur, time, vel * 0.5);
-        }
-      },
-      tom: {
-        triggerAttackRelease: (note, dur, time, vel) => {
-          tom.triggerAttackRelease(note, dur, time, vel);
-        }
-      }
-    };
-    
     console.log("Pro Audio Engine Ready");
   } catch (e) {
     console.error("Audio Init Error:", e);
@@ -234,8 +149,6 @@ async function playMidi(midi) {
   
   // Play all tracks but filter out overly short notes that cause clutter
   midi.tracks.forEach((track) => {
-    const isDrumTrack = track.instrument.percussion || track.channel === 9; // Channel 9 (10 in 1-based) is standard MIDI drums
-    
     track.notes.forEach(note => {
       // Ignore extremely quiet or short noise notes that glitch the engine
       if (note.duration < 0.08 || note.velocity < 0.15) return;
@@ -243,32 +156,18 @@ async function playMidi(midi) {
       Tone.Transport.schedule((time) => {
         const vel = Math.min(Math.max(note.velocity, 0.4), 1.0);
         
-        if (isDrumTrack) {
-          // Map standard MIDI drum notes to our synthesized kit
-          const n = note.midi;
-          if (n === 35 || n === 36) { // Kick
-            drumKit.kick.triggerAttackRelease("C1", "8n", time, vel);
-          } else if (n === 38 || n === 40) { // Snare
-            drumKit.snare.triggerAttackRelease("16n", time, vel);
-          } else if (n === 42 || n === 44 || n === 46 || n >= 49) { // Hi-hats & Cymbals
-            drumKit.hihat.triggerAttackRelease("32n", time, vel * 0.5);
-          } else { // Toms and others
-            drumKit.tom.triggerAttackRelease(note.name, "8n", time, vel);
-          }
-        } else {
-          // Play normal melodic note
-          synth.triggerAttackRelease(note.name, note.duration, time, vel);
-        }
+        // Play normal melodic note
+        synth.triggerAttackRelease(note.name, note.duration, time, vel);
         
         const color = getNoteColor(note);
         activeNotes.set(note.midi, { 
-          color: isDrumTrack ? '#ffffff' : color, // Make drums flash white
+          color: color, 
           velocity: vel,
           startTime: performance.now(),
           duration: note.duration * 1000
         });
         
-        spawnParticles(note.midi, isDrumTrack ? '#ffffff' : color, vel);
+        spawnParticles(note.midi, color, vel);
       }, note.time);
     });
   });
@@ -317,6 +216,15 @@ document.getElementById('midi-upload').addEventListener('change', async (e) => {
   statusEl.innerText = 'Parsing...';
   document.getElementById('controls').style.display = 'none';
   
+  // Auto-fetch YouTube theme based on file name
+  if (!isVideoBgActive && !isCameraActive) {
+    const themeName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+    const searchQuery = encodeURIComponent(themeName + " ambient background loop 4k");
+    ytElement.src = `https://www.youtube.com/embed?listType=search&list=${searchQuery}&autoplay=1&mute=1&controls=0&loop=1&fs=0&modestbranding=1&rel=0`;
+    ytElement.classList.add('active');
+    isYoutubeBgActive = true;
+  }
+  
   const reader = new FileReader();
   reader.onload = async function(e) {
     try {
@@ -345,9 +253,11 @@ document.getElementById('stop-btn').addEventListener('click', stopMidi);
 // Settings & Toggles
 let isCameraActive = false;
 let isVideoBgActive = false;
+let isYoutubeBgActive = false;
 let mediaStream = null;
 let isClubMode = false;
 const videoElement = document.getElementById('webcam-bg');
+const ytElement = document.getElementById('yt-bg');
 
 // Video Upload Logic
 document.getElementById('bg-video-upload').addEventListener('change', (e) => {
@@ -360,6 +270,12 @@ document.getElementById('bg-video-upload').addEventListener('change', (e) => {
     if (mediaStream) mediaStream.getTracks().forEach(track => track.stop());
     document.getElementById('camera-btn').classList.remove('active');
     isCameraActive = false;
+  }
+  
+  if (isYoutubeBgActive) {
+    ytElement.src = '';
+    ytElement.classList.remove('active');
+    isYoutubeBgActive = false;
   }
 
   videoElement.srcObject = null;
@@ -390,6 +306,11 @@ document.getElementById('camera-btn').addEventListener('click', async (e) => {
          videoElement.src = '';
          document.getElementById('video-upload-btn').classList.remove('active');
          isVideoBgActive = false;
+      }
+      if (isYoutubeBgActive) {
+         ytElement.src = '';
+         ytElement.classList.remove('active');
+         isYoutubeBgActive = false;
       }
       mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
       videoElement.srcObject = mediaStream;
@@ -432,8 +353,8 @@ function animate() {
   
   // Clean background clearing without motion blur artifacting
   ctx.globalCompositeOperation = 'source-over';
-  // If camera or video is active, clear with a mostly transparent black so the video shows through
-  if (isCameraActive || isVideoBgActive) {
+  // If camera, video, or youtube is active, clear with a mostly transparent black so the video shows through
+  if (isCameraActive || isVideoBgActive || isYoutubeBgActive) {
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = 'rgba(9, 9, 11, 0.4)';
     ctx.fillRect(0, 0, width, height);

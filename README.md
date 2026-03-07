@@ -1,8 +1,8 @@
-# 2050 Piano 🎹
+# Anopiano 🎹
 
 A futuristic, highly-visual web application that allows you to upload and play any MIDI file with a mathematical, glowing, cyberpunk-inspired circle interface.
 
-![2050 Piano Visualization Concept](https://github.com/bxzex/2050piano)
+![Anopiano Visualization Concept](https://github.com/bxzex/anopiano)
 
 ## Features
 
@@ -12,18 +12,18 @@ A futuristic, highly-visual web application that allows you to upload and play a
   - All 128 MIDI notes map seamlessly around a clean, mathematical ring.
   - Active notes fire glowing laser gradients to the core.
   - Advanced particle physics with gravity and drag simulate energy bursts.
-- **Webcam Background (AR):** Toggle your camera to create an augmented reality vibe, placing the 2050 Piano floating directly in your room.
+- **Webcam Background (AR):** Toggle your camera to create an augmented reality vibe, placing Anopiano floating directly in your room.
 - **Minimalist Professional UI:** A sleek, glass-morphic UI that cleanly fades out while playing so you can focus entirely on the music and visuals.
 
 ## How to Run
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/bxzex/2050piano.git
+   git clone https://github.com/bxzex/anopiano.git
    ```
 2. Navigate to the directory:
    ```bash
-   cd 2050piano
+   cd anopiano
    ```
 3. Start a local server (e.g., using Python):
    ```bash

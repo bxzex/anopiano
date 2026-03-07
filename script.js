@@ -114,44 +114,89 @@ async function initAudio() {
     synth.connect(limiter);
     synth.volume.value = -4; 
     
-    // Drums get their own punchy routing (less reverb, slight compression)
-    const drumCompressor = new Tone.Compressor(-12, 4).toDestination();
+    // Pro Drum Bus with EQ, Saturation, and Compression for a massive studio sound
+    const drumEQ = new Tone.EQ3({
+      low: 6,      // Huge bass boost
+      mid: -3,     // Cut muddy frequencies
+      high: 4,     // Crisp highs
+      lowFrequency: 80,
+      highFrequency: 4000
+    });
+    const drumDistortion = new Tone.Distortion(0.8); // Harmonic warmth
+    const drumCompressor = new Tone.Compressor({
+      threshold: -24,
+      ratio: 8,
+      attack: 0.003,
+      release: 0.1
+    }).toDestination(); // Bypass the huge piano reverb to stay tight
+    
+    drumEQ.connect(drumDistortion);
+    drumDistortion.connect(drumCompressor);
+    
+    // Drum Bus Channel
+    const drumBus = new Tone.Volume(2).connect(drumEQ);
 
-    // Kick: deep and punchy
-    drumKit.kick = new Tone.MembraneSynth({
-      pitchDecay: 0.05,
-      octaves: 4,
-      oscillator: { type: "sine" },
-      envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 1.4, attackCurve: "exponential" }
-    }).connect(drumCompressor);
-    drumKit.kick.volume.value = 4;
+    // KICK: Layered modern punch (sub drop + click)
+    const kickBody = new Tone.MembraneSynth({
+      pitchDecay: 0.02,
+      octaves: 5,
+      oscillator: { type: 'square' }, 
+      envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 0.4 }
+    }).connect(drumBus);
 
-    // Snare: sharp and snappy
-    drumKit.snare = new Tone.NoiseSynth({
-      noise: { type: "white" },
-      envelope: { attack: 0.001, decay: 0.2, sustain: 0 }
-    }).connect(drumCompressor);
-    drumKit.snare.volume.value = 2;
-
-    // Hi-hat / Cymbals: metallic and crisp
-    drumKit.hihat = new Tone.MetalSynth({
-      frequency: 200,
-      envelope: { attack: 0.001, decay: 0.1, release: 0.01 },
-      harmonicity: 5.1,
-      modulationIndex: 32,
-      resonance: 4000,
-      octaves: 1.5
-    }).connect(drumCompressor);
-    drumKit.hihat.volume.value = -6;
-
-    // Toms: pitched drums
-    drumKit.tom = new Tone.MembraneSynth({
-      pitchDecay: 0.05,
+    // SNARE: Layered body (tone) + noise (rattle)
+    const snareBody = new Tone.MembraneSynth({
+      pitchDecay: 0.01,
       octaves: 2,
-      oscillator: { type: "sine" },
-      envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 1.4, attackCurve: "exponential" }
-    }).connect(drumCompressor);
-    drumKit.tom.volume.value = 2;
+      oscillator: { type: 'triangle' },
+      envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.15 }
+    }).connect(drumBus);
+    
+    const snareNoise = new Tone.NoiseSynth({
+      noise: { type: 'white' },
+      envelope: { attack: 0.001, decay: 0.25, sustain: 0, release: 0.25 }
+    }).connect(drumBus);
+
+    // HI-HAT: Extremely crisp high-passed noise
+    const hihat = new Tone.NoiseSynth({
+      noise: { type: 'white' },
+      envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.05 }
+    });
+    const hihatFilter = new Tone.Filter(8000, "highpass").connect(drumBus);
+    hihat.connect(hihatFilter);
+
+    // TOM: Deep and resonant
+    const tom = new Tone.MembraneSynth({
+      pitchDecay: 0.04,
+      octaves: 3,
+      oscillator: { type: 'sine' },
+      envelope: { attack: 0.001, decay: 0.5, sustain: 0, release: 0.5 }
+    }).connect(drumBus);
+
+    // Virtual Drumkit wrapper routing logic
+    drumKit = {
+      kick: {
+        triggerAttackRelease: (note, dur, time, vel) => {
+          kickBody.triggerAttackRelease("C1", dur, time, vel * 1.5);
+        }
+      },
+      snare: {
+        triggerAttackRelease: (note, dur, time, vel) => {
+          snareBody.triggerAttackRelease("G2", dur, time, vel);
+          snareNoise.triggerAttackRelease(dur, time, vel * 0.8);
+        }
+      },
+      hihat: {
+        triggerAttackRelease: (note, dur, time, vel) => {
+          hihat.triggerAttackRelease(dur, time, vel * 0.5);
+        }
+      },
+      tom: {
+        triggerAttackRelease: (note, dur, time, vel) => {
+          tom.triggerAttackRelease(note, dur, time, vel);
+        }
+      }
+    };
     
     console.log("Pro Audio Engine Ready");
   } catch (e) {

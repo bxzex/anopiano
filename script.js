@@ -22,9 +22,9 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
-// Map ALL MIDI notes (0 to 127) onto the circle safely
-const minNote = 0;
-const totalKeys = 128;
+// Map standard 88 piano keys (MIDI 21 to 108) onto the circle
+const minNote = 21;
+const totalKeys = 88;
 
 const activeNotes = new Map();
 const particles = [];
@@ -175,7 +175,7 @@ function stopMidi() {
 
 function spawnParticles(midiNote, color, velocity) {
   // Safe indexing
-  let index = midiNote;
+  let index = midiNote - minNote;
   if (index < 0) index = 0;
   if (index >= totalKeys) index = totalKeys - 1;
   
@@ -316,15 +316,16 @@ function animate() {
     let noteColor = 'rgba(255, 255, 255, 0.1)';
     let energy = 0;
     
-    if (activeNotes.has(i)) {
-      const currentNoteData = activeNotes.get(i);
+    const actualMidiNote = i + minNote;
+    if (activeNotes.has(actualMidiNote)) {
+      const currentNoteData = activeNotes.get(actualMidiNote);
       const elapsed = now - currentNoteData.startTime;
       if (elapsed < currentNoteData.duration + 500) { 
         keyActive = true;
         noteColor = currentNoteData.color;
         energy = Math.max(0, 1 - (elapsed / (currentNoteData.duration + 500)));
       } else {
-        activeNotes.delete(i);
+        activeNotes.delete(actualMidiNote);
       }
     }
     

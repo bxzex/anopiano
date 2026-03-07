@@ -1,51 +1,22 @@
-# Anopiano 🎹
+# anopiano
 
-A futuristic, highly-visual web application that allows you to upload and play any MIDI file with a mathematical, glowing, cyberpunk-inspired circle interface.
+a visual midi player. upload any `.mid` file to play it with a circle visualizer and synth audio.
 
-![Anopiano Visualization Concept](https://github.com/bxzex/anopiano)
+![anopiano](https://github.com/bxzex/anopiano)
 
-## Features
+## setup
 
-- **MIDI Playback:** Upload any `.mid` or `.midi` file and the app will parse and play it in real-time.
-- **Cinematic Audio Engine:** Powered by Tone.js, featuring a lush, multi-oscillator synthesizer with high-end FX chains (Reverb, Chorus, Filter, Limiter) for a massive, spacey soundstage. Handles up to 256 voices of polyphony to support complex, dense MIDI files.
-- **Futuristic Visualization:** 
-  - All 128 MIDI notes map seamlessly around a clean, mathematical ring.
-  - Active notes fire glowing laser gradients to the core.
-  - Advanced particle physics with gravity and drag simulate energy bursts.
-- **Webcam Background (AR):** Toggle your camera to create an augmented reality vibe, placing Anopiano floating directly in your room.
-- **Minimalist Professional UI:** A sleek, glass-morphic UI that cleanly fades out while playing so you can focus entirely on the music and visuals.
+```bash
+git clone https://github.com/bxzex/anopiano.git
+cd anopiano
+python3 -m http.server 8080
+```
+then open `http://localhost:8080` in your browser.
 
-## How to Run
+## links
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/bxzex/anopiano.git
-   ```
-2. Navigate to the directory:
-   ```bash
-   cd anopiano
-   ```
-3. Start a local server (e.g., using Python):
-   ```bash
-   python3 -m http.server 8080
-   ```
-4. Open your browser and navigate to: `http://localhost:8080`
+bxzex ([github](https://github.com/bxzex), [instagram](https://instagram.com/bxzex))
 
-## Technologies Used
+## license
 
-- **HTML5 Canvas:** For high-performance graphics, glowing effects (additive blending), and particle rendering.
-- **Vanilla JavaScript:** Zero framework dependencies for a lightweight core.
-- **Tone.js:** For robust audio synthesis, scheduling, and effect routing.
-- **@tonejs/midi:** For parsing uploaded MIDI files into playable JSON objects.
-
-## Developed By
-
-**Brian Ochoa (BXZEX)**
-
-- [GitHub](https://github.com/bxzex)
-- [LinkedIn](https://linkedin.com/in/bxzex/)
-- [Instagram](https://instagram.com/bxzex)
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT

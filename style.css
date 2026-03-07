@@ -1,0 +1,151 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;700&display=swap');
+
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #09090b;
+  color: #ededed;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+}
+
+#ui-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 10;
+  background: rgba(18, 18, 20, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 48px 56px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+  pointer-events: auto !important;
+  min-width: 320px;
+}
+
+body.playing #ui-container {
+  opacity: 0;
+  visibility: hidden;
+}
+
+body.playing #ui-container:hover {
+  opacity: 1;
+  visibility: visible;
+}
+
+h1 {
+  margin-top: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2.5em;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 4px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+p {
+  font-size: 0.95em;
+  color: #a1a1aa;
+  margin-bottom: 32px;
+  font-weight: 400;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.custom-file-upload {
+  display: inline-block;
+  padding: 12px 28px;
+  cursor: pointer;
+  background-color: #ededed;
+  color: #09090b;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.95em;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  margin-bottom: 24px;
+}
+
+.custom-file-upload:hover {
+  background-color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
+
+#status {
+  margin-bottom: 28px;
+  font-family: 'JetBrains Mono', monospace;
+  color: #8b5cf6;
+  font-size: 0.85em;
+  text-transform: lowercase;
+}
+
+#controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+#controls button {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ededed;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.85em;
+  transition: all 0.2s ease;
+}
+
+#controls button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+#test-audio-btn {
+  border-color: rgba(139, 92, 246, 0.3) !important;
+  color: #a78bfa !important;
+}
+
+#test-audio-btn:hover {
+  background: rgba(139, 92, 246, 0.1) !important;
+  border-color: rgba(139, 92, 246, 0.5) !important;
+}
+
+#webcam-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  transform: scaleX(-1); /* Mirror the camera */
+}
+
+#webcam-bg.active {
+  opacity: 0.4; /* Keep it subtle so the visuals pop */
+}
+
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}

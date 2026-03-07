@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2050 Piano - Futuristic Circle Animation</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <!-- Use the compiled browser-ready bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.28/build/Midi.min.js"></script>
+</head>
+<body>
+  <video id="webcam-bg" autoplay playsinline muted></video>
+  <div id="ui-container">
+    <h1>2050 PIANO</h1>
+    <p>Upload a MIDI file to play any song.</p>
+    <label class="custom-file-upload">
+      <input type="file" id="midi-upload" accept=".mid,.midi">
+      Choose MIDI File
+    </label>
+    <div id="status">Waiting for a song...</div>
+    <div id="controls" style="display:none;">
+      <button id="play-btn">Play</button>
+      <button id="pause-btn">Pause</button>
+      <button id="stop-btn">Stop</button>
+      <button id="camera-btn" style="border-color: #8b5cf6; color: #8b5cf6;">Toggle Camera</button>
+    </div>
+    <!-- Add a secondary controls row for the test button -->
+    <div id="secondary-controls" style="margin-top: 15px;">
+      <button id="test-audio-btn" style="background: rgba(255, 255, 255, 0.05); color: #ededed; border: 1px solid rgba(255, 255, 255, 0.1); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.8em; transition: all 0.2s ease;">Test Audio</button>
+    </div>
+  </div>
+  <canvas id="visualizer"></canvas>
+  <script src="script.js"></script>
+</body>
+</html>

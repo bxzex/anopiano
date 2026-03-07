@@ -65,6 +65,7 @@ class Particle {
 
 // Professional Tone.js Setup
 let synth = null;
+let drumSynth = null;
 let currentMidi = null;
 let isPlaying = false;
 let animationId;
@@ -99,6 +100,20 @@ async function initAudio() {
       }
     });
 
+    // Punchy electronic drum synth for rhythm tracks
+    drumSynth = new Tone.MembraneSynth({
+      pitchDecay: 0.05,
+      octaves: 4,
+      oscillator: { type: "sine" },
+      envelope: {
+        attack: 0.001,
+        decay: 0.4,
+        sustain: 0.01,
+        release: 1.4,
+        attackCurve: "exponential"
+      }
+    });
+
     // High-end FX Chain with added Stereo Delay and massive Reverb
     const filter = new Tone.Filter(4500, "lowpass").toDestination();
     const delay = new Tone.PingPongDelay("8n", 0.3).connect(filter);
@@ -112,6 +127,11 @@ async function initAudio() {
     
     synth.connect(limiter);
     synth.volume.value = -4; 
+    
+    // Drums get their own punchy routing (less reverb, slight compression)
+    const drumCompressor = new Tone.Compressor(-10, 4).toDestination();
+    drumSynth.connect(drumCompressor);
+    drumSynth.volume.value = 2; // Punchy
     
     console.log("Pro Audio Engine Ready");
   } catch (e) {
@@ -149,23 +169,32 @@ async function playMidi(midi) {
   
   // Play all tracks but filter out overly short notes that cause clutter
   midi.tracks.forEach((track) => {
+    const isDrumTrack = track.instrument.percussion || track.channel === 9; // Channel 9 (10 in 1-based) is standard MIDI drums
+    
     track.notes.forEach(note => {
       // Ignore extremely quiet or short noise notes that glitch the engine
       if (note.duration < 0.08 || note.velocity < 0.15) return;
       
       Tone.Transport.schedule((time) => {
         const vel = Math.min(Math.max(note.velocity, 0.4), 1.0);
-        synth.triggerAttackRelease(note.name, note.duration, time, vel);
+        
+        if (isDrumTrack) {
+          // Play a percussive hit
+          drumSynth.triggerAttackRelease(note.name, "8n", time, vel);
+        } else {
+          // Play normal melodic note
+          synth.triggerAttackRelease(note.name, note.duration, time, vel);
+        }
         
         const color = getNoteColor(note);
         activeNotes.set(note.midi, { 
-          color: color, 
+          color: isDrumTrack ? '#ffffff' : color, // Make drums flash white
           velocity: vel,
           startTime: performance.now(),
           duration: note.duration * 1000
         });
         
-        spawnParticles(note.midi, color, vel);
+        spawnParticles(note.midi, isDrumTrack ? '#ffffff' : color, vel);
       }, note.time);
     });
   });

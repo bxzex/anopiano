@@ -1,6 +1,15 @@
 const canvas = document.getElementById('visualizer');
 const ctx = canvas.getContext('2d');
 
+// Settings & Toggles
+let isCameraActive = false;
+let isVideoBgActive = false;
+let isYoutubeBgActive = false;
+let mediaStream = null;
+let isClubMode = false;
+const videoElement = document.getElementById('webcam-bg');
+const ytElement = document.getElementById('yt-bg');
+
 // Suppress expected polyphony warnings so they don't spam the console
 const originalWarn = console.warn;
 console.warn = function(...args) {
@@ -215,14 +224,12 @@ document.getElementById('midi-upload').addEventListener('change', async (e) => {
   const statusEl = document.getElementById('status');
   statusEl.innerText = 'Parsing...';
   document.getElementById('controls').style.display = 'none';
-  
-  // Auto-fetch YouTube theme based on file name
-  if (!isVideoBgActive && !isCameraActive) {
-    const themeName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-    const searchQuery = encodeURIComponent(themeName + " ambient background loop 4k");
-    ytElement.src = `https://www.youtube.com/embed?listType=search&list=${searchQuery}&autoplay=1&mute=1&controls=0&loop=1&fs=0&modestbranding=1&rel=0`;
-    ytElement.classList.add('active');
-    isYoutubeBgActive = true;
+
+  // Clear any existing YouTube background when a new file is uploaded
+  if (isYoutubeBgActive) {
+    ytElement.src = '';
+    ytElement.classList.remove('active');
+    isYoutubeBgActive = false;
   }
   
   const reader = new FileReader();
@@ -240,7 +247,24 @@ document.getElementById('midi-upload').addEventListener('change', async (e) => {
   reader.readAsArrayBuffer(file);
 });
 
-document.getElementById('play-btn').addEventListener('click', () => { if (currentMidi) playMidi(currentMidi); });
+document.getElementById('play-btn').addEventListener('click', () => { 
+  if (currentMidi) {
+    // Auto-fetch YouTube theme based on file name if no background is set
+    if (!isVideoBgActive && !isCameraActive && !isYoutubeBgActive) {
+      const fileName = document.getElementById('midi-upload').files[0].name;
+      const themeName = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").trim();
+      const searchQuery = encodeURIComponent(themeName + " background loop");
+      
+      console.log(`Searching background for: ${themeName}`);
+      
+      // Use search embed with parameters to hide as much YT UI as possible
+      ytElement.src = `https://www.youtube.com/embed?listType=search&list=${searchQuery}&autoplay=1&mute=1&loop=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&enablejsapi=1`;
+      ytElement.classList.add('active');
+      isYoutubeBgActive = true;
+    }
+    playMidi(currentMidi); 
+  }
+});
 document.getElementById('pause-btn').addEventListener('click', () => {
   Tone.Transport.pause();
   if (synth) synth.releaseAll();
@@ -249,15 +273,6 @@ document.getElementById('pause-btn').addEventListener('click', () => {
   document.body.classList.remove('playing');
 });
 document.getElementById('stop-btn').addEventListener('click', stopMidi);
-
-// Settings & Toggles
-let isCameraActive = false;
-let isVideoBgActive = false;
-let isYoutubeBgActive = false;
-let mediaStream = null;
-let isClubMode = false;
-const videoElement = document.getElementById('webcam-bg');
-const ytElement = document.getElementById('yt-bg');
 
 // Video Upload Logic
 document.getElementById('bg-video-upload').addEventListener('change', (e) => {
@@ -356,7 +371,7 @@ function animate() {
   // If camera, video, or youtube is active, clear with a mostly transparent black so the video shows through
   if (isCameraActive || isVideoBgActive || isYoutubeBgActive) {
     ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = 'rgba(9, 9, 11, 0.4)';
+    ctx.fillStyle = 'rgba(9, 9, 11, 0.3)'; // Even more transparent (0.3 instead of 0.4)
     ctx.fillRect(0, 0, width, height);
   } else {
     // Solid dark background if no camera/video

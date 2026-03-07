@@ -305,7 +305,7 @@ body.effect-matrix #visualizer, body.effect-matrix #webcam-bg, body.effect-matri
 }
 
 #webcam-bg.active, #yt-bg.active {
-  opacity: 0.4; /* Keep it subtle so the visuals pop */
+  opacity: 0.6; /* Higher opacity so it's clearly visible */
 }
 
 canvas {

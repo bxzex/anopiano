@@ -134,7 +134,7 @@ input[type="file"] {
   pointer-events: auto;
 }
 
-#top-controls button {
+#top-controls button, #top-controls label {
   background: rgba(18, 18, 20, 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -154,14 +154,14 @@ input[type="file"] {
   transition: all 0.2s ease;
 }
 
-#top-controls button:hover {
+#top-controls button:hover, #top-controls label:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #ededed;
   border-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
 }
 
-#top-controls button.active {
+#top-controls button.active, #top-controls label.active {
   background: rgba(139, 92, 246, 0.15);
   color: #a78bfa;
   border-color: rgba(139, 92, 246, 0.4);

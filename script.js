@@ -241,9 +241,36 @@ document.getElementById('stop-btn').addEventListener('click', stopMidi);
 
 // Settings & Toggles
 let isCameraActive = false;
+let isVideoBgActive = false;
 let mediaStream = null;
 let isClubMode = false;
 const videoElement = document.getElementById('webcam-bg');
+
+// Video Upload Logic
+document.getElementById('bg-video-upload').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const url = URL.createObjectURL(file);
+  
+  if (isCameraActive) {
+    if (mediaStream) mediaStream.getTracks().forEach(track => track.stop());
+    document.getElementById('camera-btn').classList.remove('active');
+    isCameraActive = false;
+  }
+
+  videoElement.srcObject = null;
+  videoElement.src = url;
+  videoElement.loop = true;
+  videoElement.muted = true;
+  videoElement.play();
+  
+  videoElement.classList.add('active');
+  videoElement.style.transform = 'scaleX(1)'; // Don't mirror uploaded videos
+  
+  document.getElementById('video-upload-btn').classList.add('active');
+  isVideoBgActive = true;
+});
 
 // Camera Toggle
 document.getElementById('camera-btn').addEventListener('click', async (e) => {
@@ -256,9 +283,15 @@ document.getElementById('camera-btn').addEventListener('click', async (e) => {
     isCameraActive = false;
   } else {
     try {
+      if (isVideoBgActive) {
+         videoElement.src = '';
+         document.getElementById('video-upload-btn').classList.remove('active');
+         isVideoBgActive = false;
+      }
       mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
       videoElement.srcObject = mediaStream;
       videoElement.classList.add('active');
+      videoElement.style.transform = 'scaleX(-1)'; // Mirror camera
       btn.classList.add('active');
       isCameraActive = true;
     } catch (err) {
@@ -296,13 +329,13 @@ function animate() {
   
   // Clean background clearing without motion blur artifacting
   ctx.globalCompositeOperation = 'source-over';
-  // If camera is active, clear with a mostly transparent black so the video shows through
-  if (isCameraActive) {
+  // If camera or video is active, clear with a mostly transparent black so the video shows through
+  if (isCameraActive || isVideoBgActive) {
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = 'rgba(9, 9, 11, 0.4)';
     ctx.fillRect(0, 0, width, height);
   } else {
-    // Solid dark background if no camera
+    // Solid dark background if no camera/video
     ctx.fillStyle = '#09090b';
     ctx.fillRect(0, 0, width, height);
   }

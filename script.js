@@ -65,7 +65,7 @@ class Particle {
 
 // Professional Tone.js Setup
 let synth = null;
-let drumSynth = null;
+let drumKit = {};
 let currentMidi = null;
 let isPlaying = false;
 let animationId;
@@ -100,20 +100,6 @@ async function initAudio() {
       }
     });
 
-    // Punchy electronic drum synth for rhythm tracks
-    drumSynth = new Tone.MembraneSynth({
-      pitchDecay: 0.05,
-      octaves: 4,
-      oscillator: { type: "sine" },
-      envelope: {
-        attack: 0.001,
-        decay: 0.4,
-        sustain: 0.01,
-        release: 1.4,
-        attackCurve: "exponential"
-      }
-    });
-
     // High-end FX Chain with added Stereo Delay and massive Reverb
     const filter = new Tone.Filter(4500, "lowpass").toDestination();
     const delay = new Tone.PingPongDelay("8n", 0.3).connect(filter);
@@ -129,9 +115,43 @@ async function initAudio() {
     synth.volume.value = -4; 
     
     // Drums get their own punchy routing (less reverb, slight compression)
-    const drumCompressor = new Tone.Compressor(-10, 4).toDestination();
-    drumSynth.connect(drumCompressor);
-    drumSynth.volume.value = 2; // Punchy
+    const drumCompressor = new Tone.Compressor(-12, 4).toDestination();
+
+    // Kick: deep and punchy
+    drumKit.kick = new Tone.MembraneSynth({
+      pitchDecay: 0.05,
+      octaves: 4,
+      oscillator: { type: "sine" },
+      envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 1.4, attackCurve: "exponential" }
+    }).connect(drumCompressor);
+    drumKit.kick.volume.value = 4;
+
+    // Snare: sharp and snappy
+    drumKit.snare = new Tone.NoiseSynth({
+      noise: { type: "white" },
+      envelope: { attack: 0.001, decay: 0.2, sustain: 0 }
+    }).connect(drumCompressor);
+    drumKit.snare.volume.value = 2;
+
+    // Hi-hat / Cymbals: metallic and crisp
+    drumKit.hihat = new Tone.MetalSynth({
+      frequency: 200,
+      envelope: { attack: 0.001, decay: 0.1, release: 0.01 },
+      harmonicity: 5.1,
+      modulationIndex: 32,
+      resonance: 4000,
+      octaves: 1.5
+    }).connect(drumCompressor);
+    drumKit.hihat.volume.value = -6;
+
+    // Toms: pitched drums
+    drumKit.tom = new Tone.MembraneSynth({
+      pitchDecay: 0.05,
+      octaves: 2,
+      oscillator: { type: "sine" },
+      envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 1.4, attackCurve: "exponential" }
+    }).connect(drumCompressor);
+    drumKit.tom.volume.value = 2;
     
     console.log("Pro Audio Engine Ready");
   } catch (e) {
@@ -179,8 +199,17 @@ async function playMidi(midi) {
         const vel = Math.min(Math.max(note.velocity, 0.4), 1.0);
         
         if (isDrumTrack) {
-          // Play a percussive hit
-          drumSynth.triggerAttackRelease(note.name, "8n", time, vel);
+          // Map standard MIDI drum notes to our synthesized kit
+          const n = note.midi;
+          if (n === 35 || n === 36) { // Kick
+            drumKit.kick.triggerAttackRelease("C1", "8n", time, vel);
+          } else if (n === 38 || n === 40) { // Snare
+            drumKit.snare.triggerAttackRelease("16n", time, vel);
+          } else if (n === 42 || n === 44 || n === 46 || n >= 49) { // Hi-hats & Cymbals
+            drumKit.hihat.triggerAttackRelease("32n", time, vel * 0.5);
+          } else { // Toms and others
+            drumKit.tom.triggerAttackRelease(note.name, "8n", time, vel);
+          }
         } else {
           // Play normal melodic note
           synth.triggerAttackRelease(note.name, note.duration, time, vel);

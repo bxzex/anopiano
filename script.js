@@ -1,6 +1,13 @@
 const canvas = document.getElementById('visualizer');
 const ctx = canvas.getContext('2d');
 
+// Suppress expected polyphony warnings so they don't spam the console
+const originalWarn = console.warn;
+console.warn = function(...args) {
+  if (typeof args[0] === 'string' && args[0].includes('Max polyphony exceeded')) return;
+  originalWarn.apply(console, args);
+};
+
 let width, height, cx, cy;
 let radius;
 
@@ -69,15 +76,15 @@ async function initAudio() {
     
     // A much cleaner, more stable synth setup that won't drop notes easily
     synth = new Tone.PolySynth(Tone.Synth, {
-      maxPolyphony: 256, // Huge polyphony to handle complex MIDIs safely
+      maxPolyphony: 1024, // Extreme polyphony limit
       oscillator: {
         type: "triangle" // Smoother, less harsh sound
       },
       envelope: {
         attack: 0.01,
-        decay: 0.2,
+        decay: 0.1,
         sustain: 0.1,
-        release: 0.8
+        release: 0.3 // Faster release to free up voices quickly
       }
     });
 
@@ -130,7 +137,7 @@ async function playMidi(midi) {
   midi.tracks.forEach((track) => {
     track.notes.forEach(note => {
       // Ignore extremely quiet or short noise notes that glitch the engine
-      if (note.duration < 0.05 || note.velocity < 0.1) return;
+      if (note.duration < 0.08 || note.velocity < 0.15) return;
       
       Tone.Transport.schedule((time) => {
         const vel = Math.min(Math.max(note.velocity, 0.4), 1.0);

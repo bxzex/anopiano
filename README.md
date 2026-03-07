@@ -4,14 +4,9 @@ a visual midi player. upload any `.mid` file to play it with a circle visualizer
 
 ![anopiano](https://github.com/bxzex/anopiano)
 
-## setup
+## live
 
-```bash
-git clone https://github.com/bxzex/anopiano.git
-cd anopiano
-python3 -m http.server 8080
-```
-then open `http://localhost:8080` in your browser.
+play it now: [bxzex.github.io/anopiano](https://bxzex.github.io/anopiano)
 
 ## links
 

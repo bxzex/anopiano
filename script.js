@@ -260,6 +260,15 @@ document.getElementById('club-btn').addEventListener('click', (e) => {
   }
 });
 
+// Visual Effect Select
+document.getElementById('effect-select').addEventListener('change', (e) => {
+  const effect = e.target.value;
+  document.body.classList.remove('effect-carnival', 'effect-trippy', 'effect-matrix');
+  if (effect !== 'none') {
+    document.body.classList.add(`effect-${effect}`);
+  }
+});
+
 // Master Animation Loop
 function animate() {
   animationId = requestAnimationFrame(animate);

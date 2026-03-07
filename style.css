@@ -168,6 +168,35 @@ input[type="file"] {
   box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
 }
 
+#top-controls select {
+  background: rgba(18, 18, 20, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75em;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+#top-controls select:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ededed;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+#top-controls select option {
+  background: #09090b;
+  color: #ededed;
+}
+
 /* Club Mode FX */
 body.club-mode #visualizer {
   animation: rgb-shift 2s infinite alternate ease-in-out;
@@ -178,6 +207,42 @@ body.club-mode #visualizer {
   33% { filter: drop-shadow(5px 0px 10px rgba(255,0,0,0.3)) hue-rotate(45deg); }
   66% { filter: drop-shadow(-5px 0px 10px rgba(0,255,255,0.3)) hue-rotate(90deg); }
   100% { filter: drop-shadow(0px 5px 10px rgba(0,255,0,0.3)) hue-rotate(0deg); }
+}
+
+/* Carnival Effect */
+body.effect-carnival #visualizer {
+  animation: carnival-spin 4s infinite linear, rgb-shift 1s infinite alternate ease-in-out;
+}
+
+@keyframes carnival-spin {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+/* Trippy Effect */
+body.effect-trippy #visualizer {
+  animation: trippy-pulse 2s infinite alternate ease-in-out;
+}
+
+@keyframes trippy-pulse {
+  0% { transform: scale(1) skew(0deg); filter: hue-rotate(0deg) blur(0px) invert(0%); }
+  100% { transform: scale(1.3) skew(15deg); filter: hue-rotate(360deg) blur(4px) invert(20%); }
+}
+
+/* Matrix Effect */
+body.effect-matrix #visualizer {
+  filter: sepia(1) hue-rotate(70deg) saturate(3) contrast(1.5);
+  animation: matrix-glitch 0.2s infinite;
+}
+
+@keyframes matrix-glitch {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0, 0); }
 }
 
 #footer {

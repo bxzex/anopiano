@@ -1,3 +1,6 @@
+const canvas = document.getElementById('visualizer');
+const ctx = canvas.getContext('2d');
+
 // Settings & Toggles
 let isCameraActive = false;
 let isVideoBgActive = false;

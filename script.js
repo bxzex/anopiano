@@ -309,11 +309,28 @@ function animate() {
   
   ctx.globalCompositeOperation = 'lighter';
   
-  // Draw base circle
+  // Draw base circle and tunnel illusion
   ctx.globalCompositeOperation = 'source-over';
+  
+  // Tunnel illusion
+  const numTunnelRings = 15;
+  for (let i = 0; i < numTunnelRings; i++) {
+    const ringProgress = i / numTunnelRings;
+    const ringRadius = radius * (1 - ringProgress);
+    // Rings closer to center are darker/more transparent
+    const ringOpacity = 0.05 * (1 - ringProgress);
+    
+    ctx.beginPath();
+    ctx.strokeStyle = `rgba(255, 255, 255, ${ringOpacity})`;
+    ctx.lineWidth = 1;
+    ctx.arc(cx, cy, ringRadius, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  
+  // Base outermost circle
   ctx.beginPath();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+  ctx.lineWidth = 1.5;
   ctx.arc(cx, cy, radius, 0, Math.PI * 2);
   ctx.stroke();
 

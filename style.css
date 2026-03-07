@@ -204,7 +204,7 @@ input[type="file"] {
 }
 
 /* Club Mode FX */
-body.club-mode #visualizer, body.club-mode #webcam-bg, body.club-mode #yt-bg {
+body.club-mode #visualizer, body.club-mode #webcam-bg, body.club-mode #theme-bg {
   animation: rgb-shift 2s infinite alternate ease-in-out;
   -webkit-animation: rgb-shift 2s infinite alternate ease-in-out;
 }
@@ -217,7 +217,7 @@ body.club-mode #visualizer, body.club-mode #webcam-bg, body.club-mode #yt-bg {
 }
 
 /* Carnival Effect */
-body.effect-carnival #visualizer, body.effect-carnival #webcam-bg, body.effect-carnival #yt-bg {
+body.effect-carnival #visualizer, body.effect-carnival #webcam-bg, body.effect-carnival #theme-bg {
   animation: carnival-spin 4s infinite linear, rgb-shift 1s infinite alternate ease-in-out;
   -webkit-animation: carnival-spin 4s infinite linear, rgb-shift 1s infinite alternate ease-in-out;
 }
@@ -229,7 +229,7 @@ body.effect-carnival #visualizer, body.effect-carnival #webcam-bg, body.effect-c
 }
 
 /* Trippy Effect */
-body.effect-trippy #visualizer, body.effect-trippy #webcam-bg, body.effect-trippy #yt-bg {
+body.effect-trippy #visualizer, body.effect-trippy #webcam-bg, body.effect-trippy #theme-bg {
   animation: trippy-pulse 2s infinite alternate ease-in-out;
   -webkit-animation: trippy-pulse 2s infinite alternate ease-in-out;
 }
@@ -240,7 +240,7 @@ body.effect-trippy #visualizer, body.effect-trippy #webcam-bg, body.effect-tripp
 }
 
 /* Matrix Effect */
-body.effect-matrix #visualizer, body.effect-matrix #webcam-bg, body.effect-matrix #yt-bg {
+body.effect-matrix #visualizer, body.effect-matrix #webcam-bg, body.effect-matrix #theme-bg {
   filter: sepia(1) hue-rotate(70deg) saturate(3) contrast(1.5);
   -webkit-filter: sepia(1) hue-rotate(70deg) saturate(3) contrast(1.5);
   animation: matrix-glitch 0.2s infinite;
@@ -304,7 +304,7 @@ body.effect-matrix #visualizer, body.effect-matrix #webcam-bg, body.effect-matri
   transform: scaleX(-1); /* Mirror the camera */
 }
 
-#webcam-bg.active, #yt-bg.active {
+#webcam-bg.active, #theme-bg.active {
   opacity: 0.6; /* Higher opacity so it's clearly visible */
 }
 

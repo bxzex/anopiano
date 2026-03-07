@@ -1,14 +1,14 @@
-const canvas = document.getElementById('visualizer');
-const ctx = canvas.getContext('2d');
-
 // Settings & Toggles
 let isCameraActive = false;
 let isVideoBgActive = false;
-let isYoutubeBgActive = false;
+let isThemeBgActive = false;
 let mediaStream = null;
 let isClubMode = false;
 const videoElement = document.getElementById('webcam-bg');
-const ytElement = document.getElementById('yt-bg');
+const themeElement = document.getElementById('theme-bg');
+
+// Pexels API Key for free high-quality video loops
+const PEXELS_API_KEY = '563492ad6f91700001000001889c3799637c4146a89c922a106e232b';
 
 // Suppress expected polyphony warnings so they don't spam the console
 const originalWarn = console.warn;
@@ -225,11 +225,11 @@ document.getElementById('midi-upload').addEventListener('change', async (e) => {
   statusEl.innerText = 'Parsing...';
   document.getElementById('controls').style.display = 'none';
 
-  // Clear any existing YouTube background when a new file is uploaded
-  if (isYoutubeBgActive) {
-    ytElement.src = '';
-    ytElement.classList.remove('active');
-    isYoutubeBgActive = false;
+  // Clear any existing Theme background when a new file is uploaded
+  if (isThemeBgActive) {
+    themeElement.src = '';
+    themeElement.classList.remove('active');
+    isThemeBgActive = false;
   }
   
   const reader = new FileReader();
@@ -247,24 +247,46 @@ document.getElementById('midi-upload').addEventListener('change', async (e) => {
   reader.readAsArrayBuffer(file);
 });
 
-document.getElementById('play-btn').addEventListener('click', () => { 
+document.getElementById('play-btn').addEventListener('click', async () => { 
   if (currentMidi) {
-    // Auto-fetch YouTube theme based on file name if no background is set
-    if (!isVideoBgActive && !isCameraActive && !isYoutubeBgActive) {
+    // Auto-fetch Theme loop based on file name if no background is set
+    if (!isVideoBgActive && !isCameraActive && !isThemeBgActive) {
       const fileName = document.getElementById('midi-upload').files[0].name;
       const themeName = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").trim();
-      const searchQuery = encodeURIComponent(themeName + " background loop");
       
-      console.log(`Searching background for: ${themeName}`);
+      console.log(`Searching theme background for: ${themeName}`);
       
-      // Use search embed with parameters to hide as much YT UI as possible
-      ytElement.src = `https://www.youtube.com/embed?listType=search&list=${searchQuery}&autoplay=1&mute=1&loop=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&enablejsapi=1`;
-      ytElement.classList.add('active');
-      isYoutubeBgActive = true;
+      try {
+        const response = await fetch(`https://api.pexels.com/videos/search?query=${encodeURIComponent(themeName + " abstract")}&per_page=1`, {
+          headers: { Authorization: PEXELS_API_KEY }
+        });
+        const data = await response.json();
+        
+        if (data.videos && data.videos.length > 0) {
+          const videoUrl = data.videos[0].video_files.find(f => f.quality === 'hd' || f.quality === 'sd').link;
+          themeElement.src = videoUrl;
+          themeElement.classList.add('active');
+          isThemeBgActive = true;
+        } else {
+          // Fallback to generic abstract loop if specific theme not found
+          const fallbackResponse = await fetch(`https://api.pexels.com/videos/search?query=abstract loop&per_page=1`, {
+            headers: { Authorization: PEXELS_API_KEY }
+          });
+          const fallbackData = await fallbackResponse.json();
+          if (fallbackData.videos && fallbackData.videos.length > 0) {
+            themeElement.src = fallbackData.videos[0].video_files[0].link;
+            themeElement.classList.add('active');
+            isThemeBgActive = true;
+          }
+        }
+      } catch (err) {
+        console.error("Theme fetch error:", err);
+      }
     }
     playMidi(currentMidi); 
   }
 });
+
 document.getElementById('pause-btn').addEventListener('click', () => {
   Tone.Transport.pause();
   if (synth) synth.releaseAll();
@@ -287,10 +309,10 @@ document.getElementById('bg-video-upload').addEventListener('change', (e) => {
     isCameraActive = false;
   }
   
-  if (isYoutubeBgActive) {
-    ytElement.src = '';
-    ytElement.classList.remove('active');
-    isYoutubeBgActive = false;
+  if (isThemeBgActive) {
+    themeElement.src = '';
+    themeElement.classList.remove('active');
+    isThemeBgActive = false;
   }
 
   videoElement.srcObject = null;
@@ -322,10 +344,10 @@ document.getElementById('camera-btn').addEventListener('click', async (e) => {
          document.getElementById('video-upload-btn').classList.remove('active');
          isVideoBgActive = false;
       }
-      if (isYoutubeBgActive) {
-         ytElement.src = '';
-         ytElement.classList.remove('active');
-         isYoutubeBgActive = false;
+      if (isThemeBgActive) {
+         themeElement.src = '';
+         themeElement.classList.remove('active');
+         isThemeBgActive = false;
       }
       mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
       videoElement.srcObject = mediaStream;
@@ -368,8 +390,8 @@ function animate() {
   
   // Clean background clearing without motion blur artifacting
   ctx.globalCompositeOperation = 'source-over';
-  // If camera, video, or youtube is active, clear with a mostly transparent black so the video shows through
-  if (isCameraActive || isVideoBgActive || isYoutubeBgActive) {
+  // If camera, video, or theme is active, clear with a mostly transparent black so the video shows through
+  if (isCameraActive || isVideoBgActive || isThemeBgActive) {
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = 'rgba(9, 9, 11, 0.3)'; // Even more transparent (0.3 instead of 0.4)
     ctx.fillRect(0, 0, width, height);

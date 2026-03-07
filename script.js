@@ -218,33 +218,45 @@ document.getElementById('pause-btn').addEventListener('click', () => {
 });
 document.getElementById('stop-btn').addEventListener('click', stopMidi);
 
-// Webcam Logic
-const videoElement = document.getElementById('webcam-bg');
+// Settings & Toggles
 let isCameraActive = false;
 let mediaStream = null;
+let isClubMode = false;
+const videoElement = document.getElementById('webcam-bg');
 
-document.getElementById('camera-btn').addEventListener('click', async () => {
+// Camera Toggle
+document.getElementById('camera-btn').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
   if (isCameraActive) {
-    // Turn off camera
-    if (mediaStream) {
-      mediaStream.getTracks().forEach(track => track.stop());
-    }
+    if (mediaStream) mediaStream.getTracks().forEach(track => track.stop());
     videoElement.srcObject = null;
     videoElement.classList.remove('active');
+    btn.classList.remove('active');
     isCameraActive = false;
-    document.getElementById('camera-btn').innerText = 'Turn On Camera';
   } else {
-    // Turn on camera
     try {
       mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
       videoElement.srcObject = mediaStream;
       videoElement.classList.add('active');
+      btn.classList.add('active');
       isCameraActive = true;
-      document.getElementById('camera-btn').innerText = 'Turn Off Camera';
     } catch (err) {
-      console.error("Error accessing webcam:", err);
-      alert("Could not access camera. Please ensure permissions are granted.");
+      console.error("Webcam error:", err);
+      alert("Could not access camera.");
     }
+  }
+});
+
+// Club Mode Toggle
+document.getElementById('club-btn').addEventListener('click', (e) => {
+  const btn = e.currentTarget;
+  isClubMode = !isClubMode;
+  if (isClubMode) {
+    document.body.classList.add('club-mode');
+    btn.classList.add('active');
+  } else {
+    document.body.classList.remove('club-mode');
+    btn.classList.remove('active');
   }
 });
 

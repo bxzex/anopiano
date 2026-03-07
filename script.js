@@ -74,24 +74,38 @@ async function initAudio() {
   try {
     await Tone.start();
     
-    // A much cleaner, more stable synth setup that won't drop notes easily
-    synth = new Tone.PolySynth(Tone.Synth, {
-      maxPolyphony: 1024, // Extreme polyphony limit
+    // A richer, electric-piano style FM synth for a deeper, more professional sound
+    synth = new Tone.PolySynth(Tone.FMSynth, {
+      maxPolyphony: 256,
+      harmonicity: 2.5,
+      modulationIndex: 5,
       oscillator: {
-        type: "triangle" // Smoother, less harsh sound
+        type: "sine"
       },
       envelope: {
         attack: 0.01,
-        decay: 0.1,
+        decay: 0.2,
+        sustain: 0.2,
+        release: 0.5
+      },
+      modulation: {
+        type: "square"
+      },
+      modulationEnvelope: {
+        attack: 0.01,
+        decay: 0.2,
         sustain: 0.1,
-        release: 0.3 // Faster release to free up voices quickly
+        release: 0.5
       }
     });
 
-    // High-end FX Chain that won't clip
-    const filter = new Tone.Filter(4000, "lowpass").toDestination();
-    const chorus = new Tone.Chorus(4, 2.5, 0.5).connect(filter);
-    const reverb = new Tone.Reverb({ decay: 3, preDelay: 0.05, wet: 0.3 }).connect(chorus);
+    // High-end FX Chain with added Stereo Delay and massive Reverb
+    const filter = new Tone.Filter(4500, "lowpass").toDestination();
+    const delay = new Tone.PingPongDelay("8n", 0.3).connect(filter);
+    delay.wet.value = 0.25; // Adds a nice bouncing echo
+    
+    const chorus = new Tone.Chorus(4, 2.5, 0.5).connect(delay);
+    const reverb = new Tone.Reverb({ decay: 4.5, preDelay: 0.1, wet: 0.45 }).connect(chorus);
     
     // Master Limiter to prevent harsh distortion
     const limiter = new Tone.Limiter(-2).connect(reverb);

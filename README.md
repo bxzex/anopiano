@@ -1,17 +1,7 @@
-# anopiano
+# Anopiano
 
-a visual midi player. upload any `.mid` file to play it with a circle visualizer and synth audio.
+Drop in any MIDI file and watch it play as rings of light around a circle, with a synth playing the notes.
 
-![anopiano](https://github.com/bxzex/anopiano)
+Live: https://bxzex.github.io/anopiano/
 
-## live
-
-play it now: [bxzex.github.io/anopiano](https://bxzex.github.io/anopiano)
-
-## links
-
-bxzex ([github](https://github.com/bxzex), [instagram](https://instagram.com/bxzex))
-
-## license
-
-MIT
+MIT licensed. Made by [bxzex](https://bxzex.com).

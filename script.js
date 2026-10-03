@@ -142,9 +142,10 @@ document.getElementById('test-audio-btn').addEventListener('click', async () => 
   if (synth) {
     const now = Tone.now();
     synth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "1n", now);
-    document.getElementById('status').innerText = "Audio test playing...";
+    document.getElementById('status').innerText = "Playing a test chord…";
     setTimeout(() => {
-      document.getElementById('status').innerText = currentMidi ? "Ready." : "Waiting for file...";
+      const el = document.getElementById('status');
+      if (el.innerText.startsWith('Playing a test')) el.innerText = currentMidi ? "Ready." : "No file loaded.";
     }, 2000);
   }
 });
@@ -187,7 +188,7 @@ async function playMidi(midi) {
   Tone.Transport.start(now);
   isPlaying = true;
   document.body.classList.add('playing');
-  document.getElementById('status').innerText = 'Playing...';
+  document.getElementById('status').innerText = 'Playing ' + currentName;
 }
 
 function stopMidi() {
@@ -225,7 +226,7 @@ document.getElementById('midi-upload').addEventListener('change', async (e) => {
   if (!file) return;
   
   const statusEl = document.getElementById('status');
-  statusEl.innerText = 'Parsing...';
+  statusEl.innerText = 'Reading file…';
   document.getElementById('controls').style.display = 'none';
 
   // Clear any existing Theme background when a new file is uploaded
@@ -240,21 +241,64 @@ document.getElementById('midi-upload').addEventListener('change', async (e) => {
     try {
       if (typeof Midi === 'undefined') throw new Error('MIDI library failed to load.');
       currentMidi = new Midi(e.target.result);
-      statusEl.innerText = `Loaded: ${file.name}`;
-      document.getElementById('controls').style.display = 'block';
+      currentName = file.name;
+      isDemo = false;
+      statusEl.innerText = `Loaded ${file.name}`;
+      document.getElementById('controls').style.display = 'flex';
     } catch (err) {
-      console.error(err);
-      statusEl.innerText = 'Error parsing: ' + err.message;
+      console.warn(err);
+      statusEl.innerText = 'Could not read that file. Is it a .mid file?';
     }
   };
   reader.readAsArrayBuffer(file);
 });
 
+// Built-in demo so the page can be tried without a file:
+// the opening bars of Bach's Prelude in C major (BWV 846).
+let currentName = '';
+let isDemo = false;
+const DEMO_BARS = [
+  [60, 64, 67, 72, 76], [60, 62, 69, 74, 77], [59, 62, 67, 74, 77], [60, 64, 67, 72, 76],
+  [60, 64, 69, 76, 81], [60, 62, 66, 69, 74], [59, 62, 67, 74, 79], [59, 60, 64, 67, 72],
+  [57, 60, 64, 67, 72], [50, 57, 62, 66, 72], [55, 59, 62, 67, 71], [48, 60, 64, 67, 72]
+];
+function buildDemo() {
+  const midi = new Midi();
+  const track = midi.addTrack();
+  const step = 0.2;
+  DEMO_BARS.forEach((bar, b) => {
+    for (let half = 0; half < 2; half++) {
+      [0, 1, 2, 3, 4, 2, 3, 4].forEach((n, i) => {
+        const held = i < 2;
+        track.addNote({
+          midi: bar[n],
+          time: (b * 16 + half * 8 + i) * step,
+          duration: held ? step * (8 - i) : step * 1.5,
+          velocity: held ? 0.75 : 0.6
+        });
+      });
+    }
+  });
+  track.addNote({ midi: 48, time: DEMO_BARS.length * 16 * step, duration: 2.5, velocity: 0.7 });
+  return midi;
+}
+document.getElementById('demo-btn').addEventListener('click', () => {
+  if (typeof Midi === 'undefined') {
+    document.getElementById('status').innerText = 'The MIDI library did not load. Check your connection and reload.';
+    return;
+  }
+  currentMidi = buildDemo();
+  currentName = 'Prelude in C (demo)';
+  isDemo = true;
+  document.getElementById('controls').style.display = 'flex';
+  playMidi(currentMidi);
+});
+
 document.getElementById('play-btn').addEventListener('click', async () => { 
   if (currentMidi) {
     // Auto-fetch Theme loop based on file name if no background is set
-    if (!isVideoBgActive && !isCameraActive && !isThemeBgActive) {
-      const fileName = document.getElementById('midi-upload').files[0].name;
+    if (!isDemo && !isVideoBgActive && !isCameraActive && !isThemeBgActive) {
+      const fileName = currentName;
       const themeName = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").trim();
       
       console.log(`Searching theme background for: ${themeName}`);
@@ -360,7 +404,7 @@ document.getElementById('camera-btn').addEventListener('click', async (e) => {
       isCameraActive = true;
     } catch (err) {
       console.error("Webcam error:", err);
-      alert("Could not access camera.");
+      document.getElementById('status').innerText = "Could not open the camera. Check the browser permission.";
     }
   }
 });
